@@ -22,14 +22,23 @@ def homepage():
     return '<h1> Hello! Welcome to my api page </h1>'
 
 
-@app.route('/drinks')
+@app.route('/drinks', methods=['POST', 'GET'])
 def get_drinks():
-    drinks = Drink.query.all()
-    output = []
-    for drink in drinks:
-        drink_data = {'id':drink.id, 'name':drink.name, 'description': drink.description, 'price':drink.price}
-        output.append(drink_data)
-    return {'drink': output}
+    if request.method == 'POST':
+        drink = Drink(name=request.json['name'], description=request.json['description'], price=request.json['price'])
+        db.session.add(drink)
+        db.session.commit()
+        return {'id': drink.id, 'name': drink.name,
+                "msg": "drink successfully added"}
+    elif request.method == 'GET':
+        drinks = Drink.query.all()
+        output = []
+        for drink in drinks:
+            drink_data = {'id':drink.id, 'name':drink.name, 'description': drink.description, 'price':drink.price}
+            output.append(drink_data)
+        return {'drink': output}
+    else:
+        return {"msg": 'not a valid method'}
 
 
 @app.route('/drinks/<id>')
@@ -38,12 +47,12 @@ def get_drinksBy_id(id):
     return {'id':drink.id, 'name':drink.name, 'description': drink.description, 'price':drink.price}
 
 
-@app.route('/drinks', methods=['POST'])
-def create_drink():
-    drink = Drink(name=request.json['name'], description=request.json['description'], price=request.json['price'])
-    db.session.add(drink)
-    db.session.commit()
-    return {'id':drink.id, 'name':drink.name}
+# @app.route('/drinks', methods=['POST'])
+# def create_drink():
+#     drink = Drink(name=request.json['name'], description=request.json['description'], price=request.json['price'])
+#     db.session.add(drink)
+#     db.session.commit()
+#     return {'id':drink.id, 'name':drink.name}
 
 
 @app.route('/drinks/<id>', methods=['DELETE'])
